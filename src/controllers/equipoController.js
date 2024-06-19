@@ -4,12 +4,12 @@ const Equipo = require('../models/Equipo');
 const getAllEquipos = async (req, res) => {
   try {
     const allEquipos = await equipoService.getAllEquipos();
-    res.status(201).send({ status: 'OK', data: allEquipos });
+    res.status(200).json({ status: 'success', data: allEquipos });
   } catch (error) {
     console.error(error);
+    res.status(500).json({ status: 'error', message: 'Error al obtener equipos' });
   }
 };
-
 const getOneEquipo = async (req, res) => {
   try {
     const { params: { equipoId } } = req;

@@ -1,6 +1,8 @@
 const reporteService = require('../services/reporteService');
 const Reporte = require('../models/Reporte');
 
+
+
 const getAllReportes = async (req, res) => {
   try {
     const { body } = req;
@@ -38,7 +40,8 @@ const createNewReporte = async (req, res) => {
     if (
       !body.codigo ||
       !body.operador ||
-      !body.fecha
+      !body.fecha||
+      !body.observaciones
     ) {
       {
         res
@@ -53,11 +56,23 @@ const createNewReporte = async (req, res) => {
         return;
       }
     }
+    console.log(body);
+    const items = body.items.map(item => ({
+      numero: item.numero,
+      puntosInspeccion: item.puntosInspeccion,
+      estado: item.estado,
+      
+    }));
+
     const reporte = new Reporte({
       equipo: body.codigo,
       operador: body.operador,
-      fecha: body.fecha
+      fecha: body.fecha,
+      otros: body.otros,
+      items: items,
+      observaciones: body.observaciones
     });
+
 
     const createdReporte = await reporteService.createNewReporte(reporte);
     res.status(201).send({ status: 'OK', data: createdReporte });

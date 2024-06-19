@@ -9,6 +9,6 @@ router
     .post("/", reporteController.createNewReporte)
     .patch("/:reporteId", reporteController.updateOneReporte)
     .delete("/:reporteId", reporteController.deleteOneReporte)
-    .patch("/:reporteId/check", [authJWT.verifyToken, authJWT.esGerenteOSupervisor], reporteController.checkSupervisorOGerente)
+    .patch("/:reporteId/check",[authJWT.verifyToken, authJWT.esGerenteOSupervisor], reporteController.checkSupervisorOGerente)
 
 module.exports = router;

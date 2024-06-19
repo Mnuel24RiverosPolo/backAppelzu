@@ -3,21 +3,43 @@ const { SECRET } = require('../config');
 const Usuario = require('../models/Usuario');
 const Rol = require('../models/Rol');
 
+
+
+const authMiddleware = (req, res, next) => {
+    const token = req.headers.authorization;
+
+    if (!token) {
+        return res.status(401).json({ status: 'error', message: 'Token de autenticación no proporcionado' });
+    }
+
+    try {
+        const decoded = jwt.verify(token, SECRET);
+        req.user = decoded;
+        next();
+    } catch (error) {
+        return res.status(403).json({ status: 'error', message: 'Token de autenticación inválido' });
+    }
+};
+
 const verifyToken = async (req, res, next) => {
     try {
-        const token = req.headers["x-access-token"];
+        const token = req.headers["authorization"];
 
-        if (!token) return res.status(403).json({ message: "No hay token" });
+        if (!token) {
+            return res.status(403).json({ status: 'error', message: "No hay token" });
+        }
+
         const decoded = jwt.verify(token, SECRET);
         req.usuarioId = decoded.id;
-        console.log(token)
         const usuario = await Usuario.findById(req.usuarioId, { clave: 0 });
-        if (!usuario) return res.status(404).json({ message: "usuario no encontrado" });
+
+        if (!usuario) {
+            return res.status(404).json({ status: 'error', message: "Usuario no encontrado" });
+        }
 
         next();
-
     } catch (error) {
-        return res.status(401).json({ message: 'No autorizado' })
+        return res.status(401).json({ status: 'error', message: 'No autorizado' });
     }
 };
 
@@ -140,5 +162,6 @@ module.exports = {
     esTecnico,
     esGerente,
     esSupervisor,
-    esGerenteOSupervisor
+    esGerenteOSupervisor,
+    authMiddleware
 }

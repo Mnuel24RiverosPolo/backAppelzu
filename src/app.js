@@ -19,15 +19,16 @@ const v1ReporteRouter = require('./v1/routes/reporteRoutes');
 app.set('pkg', pkg);
 app.set('json spaces', 4);
 
-
 app.use(express.json());
 app.use(helmet());
 app.use(morgan('dev'));
 app.use(cors({
-  allowedHeaders: ['Content-Type', 'Authorization']
+  origin: '*',
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-access-token']
 }));
 
-app.use(express.urlencoded({ extended: false })); 
+app.use(express.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
 //rutas

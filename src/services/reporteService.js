@@ -1,4 +1,7 @@
 const Reporte = require('../models/Reporte')
+
+const mongoose = require('mongoose');
+
 const getAllReportes = async () => {
   const reportes = await Reporte.aggregate([
     {
@@ -36,7 +39,7 @@ const getAllReportes = async () => {
     },
     {
       $project: {
-        _id: 0,
+        _id: 1, // Incluir el campo _id en el resultado
         equipo: 1,
         'operador.nombre': 1,
         fecha: 1,
@@ -54,6 +57,7 @@ const getAllReportes = async () => {
   ]);
   return reportes;
 };
+
 
 const getAllReportesByFecha = async (fecha) => {
 
@@ -119,11 +123,48 @@ const getAllReportesByFecha = async (fecha) => {
 }
 
 const getOneReporte = async (id) => {
-  const reporte = await Reporte.findById(id);
-  if (!reporte) {
-    return 'reporte no encontrado'
+  try {
+    const reporte = await Reporte.aggregate([
+      {
+        $match: {
+          _id: new mongoose.Types.ObjectId(id)
+        }
+      },
+      {
+        $lookup: {
+          from: "usuarios", // Nombre de la colección de usuarios
+          localField: "operador", // Campo en el reporte que contiene el ID del usuario
+          foreignField: "_id", // Campo en la colección de usuarios que contiene el ID
+          as: "operador" // Nombre del campo que contendrá el resultado del join
+
+        }
+      },
+      {
+        $unwind: "$operador" // Deshacer el array resultante del join
+      },
+      {
+        $project: {
+          equipo: 1,
+          operador: "$operador.nombre", // Obtener el nombre del usuario del campo operador
+          fecha: 1,
+          otros: 1,
+          items: 1,
+          supervisor:1,
+          observaciones:1,
+
+        }
+      }
+    ]);
+
+    if (reporte.length === 0) {
+      return 'Reporte no encontrado';
+    }
+
+    return reporte[0]; // Devolver el primer documento del resultado de la agregación
+  } catch (error) {
+    console.error(error);
+    throw new Error('Error al obtener el reporte');
   }
-  return reporte;
 };
 
 const createNewReporte = async (nuevoReporte) => {
